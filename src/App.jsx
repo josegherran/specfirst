@@ -73,7 +73,7 @@ function App() {
         {errorMsg && (
           <p className="text-red-500 text-sm px-10 pt-4">{errorMsg}</p>
         )}
-        <LeftPanel phase={phase} onSubmit={handleSubmit} />
+        <LeftPanel phase={phase} messages={messages} onSubmit={handleSubmit} onPreview={handlePreview} />
       </div>
       <div className="w-1/2 p-8 text-gray-400">
         <p className="text-xs mb-4">phase: {phase}</p>
