@@ -1,0 +1,11 @@
+@import "tailwindcss";
+
+@keyframes pulse-highlight {
+  0% { background-color: transparent; }
+  20% { background-color: rgba(99, 102, 241, 0.12); }
+  100% { background-color: transparent; }
+}
+
+.spec-pulse {
+  animation: pulse-highlight 800ms ease-out;
+}
