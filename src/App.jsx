@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { streamMessage } from "./lib/claude.js";
 import { detectInputRichness, isLoopComplete } from "./lib/specParser.js";
+import LeftPanel from "./components/LeftPanel.jsx";
 import "./index.css";
 
 const initialSpec = {
@@ -68,37 +69,11 @@ function App() {
 
   return (
     <div className="flex h-screen bg-white text-gray-900">
-      <div className="w-1/2 border-r border-gray-200 p-8">
-        <p className="text-xs text-gray-400 mb-2">phase: {phase}</p>
-        {errorMsg && <p className="text-red-500 text-sm mb-2">{errorMsg}</p>}
-        <p className="text-sm text-gray-500 mb-4">LeftPanel placeholder</p>
-        {phase === 'initial' && (
-          <button
-            className="px-4 py-2 bg-gray-900 text-white text-sm rounded"
-            onClick={() => handleSubmit("I need a payment reconciliation system for KYC-gated EU customers that handles multi-currency transactions and fraud detection.")}
-          >
-            Test submit (rich input)
-          </button>
+      <div className="w-1/2 border-r border-gray-200 overflow-y-auto">
+        {errorMsg && (
+          <p className="text-red-500 text-sm px-10 pt-4">{errorMsg}</p>
         )}
-        {phase === 'clarifying' && (
-          <button
-            className="px-4 py-2 bg-gray-900 text-white text-sm rounded mt-2"
-            onClick={() => handleSubmit("The main constraint is GDPR compliance and sub-second response times. System boundaries are the payment gateway API and our internal ledger.")}
-          >
-            Test follow-up answer
-          </button>
-        )}
-        {phase === 'complete' && (
-          <button
-            className="px-4 py-2 bg-blue-600 text-white text-sm rounded mt-2"
-            onClick={handlePreview}
-          >
-            Preview final specification →
-          </button>
-        )}
-        <div className="mt-4 text-xs text-gray-400">
-          <p>messages: {messages.length}</p>
-        </div>
+        <LeftPanel phase={phase} onSubmit={handleSubmit} />
       </div>
       <div className="w-1/2 p-8 text-gray-400">
         <p className="text-xs mb-4">phase: {phase}</p>
