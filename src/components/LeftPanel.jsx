@@ -103,16 +103,6 @@ export default function LeftPanel({ phase, messages, streamingText, onSubmit, on
           </div>
         </div>
 
-        {/* ThinkingIndicator — only when no streaming text yet */}
-        {phase === 'thinking' && !streamingText && <ThinkingIndicator phase={phase} />}
-
-        {/* Live streaming text during thinking phase */}
-        {phase === 'thinking' && streamingText && (
-          <div className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">
-            {streamingText}
-          </div>
-        )}
-
         {/* Chat history (all messages after the first user message) */}
         {chatMessages.map((msg, idx) => (
           <div key={idx} className={msg.role === "user" ? "flex justify-end" : ""}>
@@ -127,6 +117,14 @@ export default function LeftPanel({ phase, messages, streamingText, onSubmit, on
             )}
           </div>
         ))}
+
+        {/* ThinkingIndicator and live stream — always at the bottom, after history */}
+        {phase === 'thinking' && !streamingText && <ThinkingIndicator phase={phase} />}
+        {phase === 'thinking' && streamingText && (
+          <div className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">
+            {streamingText}
+          </div>
+        )}
 
         {/* Preview button — appears after exit message in complete phase */}
         {phase === "complete" && (

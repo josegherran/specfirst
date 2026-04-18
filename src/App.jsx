@@ -59,7 +59,8 @@ function App() {
       (msg) => {
         setErrorMsg(msg);
         setPhase('clarifying');
-      }
+      },
+      () => isLoopComplete(specSnapshot)
     );
 
     // Save full structured history for next API call

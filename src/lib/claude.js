@@ -77,7 +77,7 @@ async function callStream(messages, onText, onSpecUpdate) {
   return { text: textAccumulator, toolBlocks, stopReason };
 }
 
-export async function streamMessage(messages, onText, onSpecUpdate, onError) {
+export async function streamMessage(messages, onText, onSpecUpdate, onError, getIsLoopComplete) {
   try {
     let conversationMessages = [...messages];
     let totalToolBlocks = [];
@@ -103,16 +103,18 @@ export async function streamMessage(messages, onText, onSpecUpdate, onError) {
 
       if (stopReason === 'tool_use' && toolBlocks.length > 0) {
         // Claude is waiting for tool results — send them and loop
-        const toolResultMsg = {
-          role: 'user',
-          content: toolBlocks.map(tb => ({
-            type: 'tool_result',
-            tool_use_id: tb.id,
-            content: 'ok',
-          })),
-        };
-        conversationMessages = [...conversationMessages, toolResultMsg];
-        console.log('[claude.js] Sending tool results, continuing...');
+        const loopDone = getIsLoopComplete ? getIsLoopComplete() : false;
+        const toolResults = toolBlocks.map((tb, i) => ({
+          type: 'tool_result',
+          tool_use_id: tb.id,
+          // On the last tool result, inject the loop completion cue if needed
+          content: (loopDone && i === toolBlocks.length - 1)
+            ? 'ok. [SYSTEM: All three core sections are now filled. Deliver the closing synthesis now.]'
+            : 'ok',
+        }));
+
+        conversationMessages = [...conversationMessages, { role: 'user', content: toolResults }];
+        console.log('[claude.js] Sending tool results' + (loopDone ? ' (loop complete signal sent)' : '') + ', continuing...');
       } else {
         // stop_reason is "end_turn" — Claude is done
         console.log('[claude.js] Stream complete. Tool calls:', totalToolBlocks.length);
@@ -124,6 +126,6 @@ export async function streamMessage(messages, onText, onSpecUpdate, onError) {
   } catch (err) {
     console.error('[claude.js] streamMessage error:', err);
     onError('Something went wrong. Try again.');
-    return { toolCallCount: 0, toolBlocks: [] };
+    return { toolCallCount: 0, toolBlocks: [], finalApiMessages: messages };
   }
 }
