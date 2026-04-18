@@ -8,11 +8,45 @@ const SECTION_LABELS = {
   openQuestions:    "Open Questions",
 };
 
+function renderMarkdown(text) {
+  if (!text) return null;
+  const lines = text.split('\n');
+  const elements = [];
+  let listItems = [];
+
+  lines.forEach((line, i) => {
+    if (/^[-*] /.test(line)) {
+      listItems.push(line.slice(2));
+    } else {
+      if (listItems.length > 0) {
+        elements.push(
+          <ul key={`ul-${i}`} className="list-disc ml-5 space-y-1 mb-3">
+            {listItems.map((item, j) => <li key={j}>{item}</li>)}
+          </ul>
+        );
+        listItems = [];
+      }
+      if (line.trim()) {
+        elements.push(<p key={i} className="mb-3 last:mb-0">{line}</p>);
+      }
+    }
+  });
+
+  if (listItems.length > 0) {
+    elements.push(
+      <ul key="ul-end" className="list-disc ml-5 space-y-1 mb-3">
+        {listItems.map((item, j) => <li key={j}>{item}</li>)}
+      </ul>
+    );
+  }
+
+  return elements;
+}
+
 export default function SpecSection({ sectionKey, content, lastUpdated, phase }) {
   const title = SECTION_LABELS[sectionKey] || sectionKey;
   const [isPulsing, setIsPulsing] = useState(false);
   const prevUpdated = useRef(lastUpdated);
-  // Show provenance only if updated within the last 10 seconds (from the latest response)
   const isRecent = lastUpdated !== null && (Date.now() - lastUpdated) < 10_000;
   const showProvenance = isRecent && phase !== "preview" && phase !== "initial";
 
@@ -20,7 +54,6 @@ export default function SpecSection({ sectionKey, content, lastUpdated, phase })
     if (phase === "preview") return;
     if (lastUpdated !== prevUpdated.current && lastUpdated !== null) {
       setIsPulsing(false);
-      // flush the removal so the browser registers the class was gone
       requestAnimationFrame(() => {
         setIsPulsing(true);
         prevUpdated.current = lastUpdated;
@@ -35,6 +68,19 @@ export default function SpecSection({ sectionKey, content, lastUpdated, phase })
   const isEmpty = content === null;
   const isDraft = isEmpty && phase !== "initial" && phase !== "thinking";
 
+  if (phase === "preview") {
+    return (
+      <div className="mb-8">
+        <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-400 mb-2">
+          {title}
+        </h3>
+        <div className="text-sm text-gray-800 leading-7">
+          {renderMarkdown(content)}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       className={`mb-6 rounded-lg px-4 py-3 ${isPulsing ? "spec-pulse" : ""}`}
@@ -44,10 +90,10 @@ export default function SpecSection({ sectionKey, content, lastUpdated, phase })
         <h3 className="text-xs font-semibold uppercase tracking-wide text-gray-500">
           {title}
         </h3>
-        {isDraft && phase !== "preview" && (
+        {isDraft && (
           <span className="text-xs text-gray-400 italic">(draft)</span>
         )}
-        {showProvenance && content !== null && phase !== "preview" && (
+        {showProvenance && content !== null && (
           <span className="text-xs text-indigo-400">· Added from your latest response</span>
         )}
       </div>
@@ -57,9 +103,7 @@ export default function SpecSection({ sectionKey, content, lastUpdated, phase })
           {phase === "initial" || phase === "thinking" ? "pending…" : "pending"}
         </p>
       ) : (
-        <p className={`text-sm leading-relaxed ${phase === "preview" ? "text-gray-800 leading-6" : "text-gray-700"}`}>
-          {content}
-        </p>
+        <p className="text-sm leading-relaxed text-gray-700">{content}</p>
       )}
     </div>
   );
