@@ -6,17 +6,16 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: {
     proxy: {
-      '/anthropic-api': {
+      '/api/chat': {
         target: 'https://api.anthropic.com',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/anthropic-api/, ''),
+        rewrite: () => '/v1/messages',
         headers: {
+          'x-api-key': process.env.VITE_ANTHROPIC_API_KEY,
           'anthropic-version': '2023-06-01',
-          'anthropic-dangerous-direct-browser-access': 'true',
         },
         configure: (proxy) => {
           proxy.on('proxyRes', (proxyRes) => {
-            // Disable buffering so SSE streams through immediately
             proxyRes.headers['x-accel-buffering'] = 'no';
           });
         },
