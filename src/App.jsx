@@ -15,9 +15,13 @@ const initialSpec = {
 
 function App() {
   const [phase, setPhase] = useState('initial');
-  const [messages, setMessages] = useState([]);
+  // displayMessages: plain { role, content: string } — rendered in LeftPanel
+  const [displayMessages, setDisplayMessages] = useState([]);
+  // apiMessages: full structured history with tool_use/tool_result blocks — sent to API
+  const [apiMessages, setApiMessages] = useState([]);
   const [spec, setSpec] = useState(initialSpec);
   const [errorMsg, setErrorMsg] = useState(null);
+  const [streamingText, setStreamingText] = useState('');
 
   function updateSpecSection(section, content) {
     setSpec(prev => ({
@@ -28,21 +32,25 @@ function App() {
 
   async function handleSubmit(userInput) {
     setErrorMsg(null);
-    const richness = detectInputRichness(userInput);
+    detectInputRichness(userInput); // used as hint by system prompt via context
     const userMsg = { role: 'user', content: userInput };
-    const nextMessages = [...messages, userMsg];
-    setMessages(nextMessages);
+    const nextApiMessages = [...apiMessages, userMsg];
+    setApiMessages(nextApiMessages);
+    setDisplayMessages(prev => [...prev, userMsg]);
     setPhase('thinking');
 
     let fullText = '';
     let specSnapshot = spec;
+    setStreamingText('');
 
-    const { toolCallCount } = await streamMessage(
-      nextMessages,
-      (text) => { fullText += text; },
+    const { toolCallCount, finalApiMessages } = await streamMessage(
+      nextApiMessages,
+      (text) => {
+        fullText += text;
+        setStreamingText(prev => prev + text);
+      },
       (section, content) => {
         updateSpecSection(section, content);
-        // capture latest spec for loop check after stream closes
         specSnapshot = {
           ...specSnapshot,
           [section]: { content, lastUpdated: Date.now() },
@@ -54,8 +62,11 @@ function App() {
       }
     );
 
-    const assistantMsg = { role: 'assistant', content: fullText };
-    setMessages(prev => [...prev, assistantMsg]);
+    // Save full structured history for next API call
+    setApiMessages(finalApiMessages);
+    // Save plain text for display
+    setDisplayMessages(prev => [...prev, { role: 'assistant', content: fullText }]);
+    setStreamingText('');
 
     if (isLoopComplete(specSnapshot)) {
       setPhase('complete');
@@ -74,7 +85,13 @@ function App() {
         {errorMsg && (
           <p className="text-red-500 text-sm px-10 pt-4">{errorMsg}</p>
         )}
-        <LeftPanel phase={phase} messages={messages} onSubmit={handleSubmit} onPreview={handlePreview} />
+        <LeftPanel
+          phase={phase}
+          messages={displayMessages}
+          streamingText={streamingText}
+          onSubmit={handleSubmit}
+          onPreview={handlePreview}
+        />
       </div>
       <div className="w-1/2 overflow-y-auto">
         <RightPanel spec={spec} phase={phase} />

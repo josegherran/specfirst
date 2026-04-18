@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import ThinkingIndicator from "./ThinkingIndicator.jsx";
 
-export default function LeftPanel({ phase, messages, onSubmit, onPreview }) {
+export default function LeftPanel({ phase, messages, streamingText, onSubmit, onPreview }) {
   const [input, setInput] = useState("");
   const messagesEndRef = useRef(null);
 
@@ -103,8 +103,15 @@ export default function LeftPanel({ phase, messages, onSubmit, onPreview }) {
           </div>
         </div>
 
-        {/* ThinkingIndicator */}
-        <ThinkingIndicator phase={phase} />
+        {/* ThinkingIndicator — only when no streaming text yet */}
+        {phase === 'thinking' && !streamingText && <ThinkingIndicator phase={phase} />}
+
+        {/* Live streaming text during thinking phase */}
+        {phase === 'thinking' && streamingText && (
+          <div className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">
+            {streamingText}
+          </div>
+        )}
 
         {/* Chat history (all messages after the first user message) */}
         {chatMessages.map((msg, idx) => (
