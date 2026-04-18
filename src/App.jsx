@@ -2,6 +2,7 @@ import { useState } from "react";
 import { streamMessage } from "./lib/claude.js";
 import { detectInputRichness, isLoopComplete } from "./lib/specParser.js";
 import LeftPanel from "./components/LeftPanel.jsx";
+import RightPanel from "./components/RightPanel.jsx";
 import "./index.css";
 
 const initialSpec = {
@@ -75,17 +76,8 @@ function App() {
         )}
         <LeftPanel phase={phase} messages={messages} onSubmit={handleSubmit} onPreview={handlePreview} />
       </div>
-      <div className="w-1/2 p-8 text-gray-400">
-        <p className="text-xs mb-4">phase: {phase}</p>
-        <p className="text-sm mb-4">Specification (draft) / Waiting for input…</p>
-        {Object.entries(spec).map(([key, val]) => (
-          val.content && (
-            <div key={key} className="mb-3">
-              <p className="text-xs font-semibold text-gray-500 uppercase">{key}</p>
-              <p className="text-sm text-gray-800">{val.content}</p>
-            </div>
-          )
-        ))}
+      <div className="w-1/2 overflow-y-auto">
+        <RightPanel spec={spec} phase={phase} />
       </div>
     </div>
   );
