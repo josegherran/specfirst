@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 
 const SECTION_LABELS = {
   problem:          "Problem",
@@ -43,7 +43,7 @@ function renderMarkdown(text) {
   return elements;
 }
 
-export default function SpecSection({ sectionKey, content, lastUpdated, phase }) {
+export default memo(function SpecSection({ sectionKey, content, lastUpdated, phase }) {
   const title = SECTION_LABELS[sectionKey] || sectionKey;
   const [isPulsing, setIsPulsing] = useState(false);
   const prevUpdated = useRef(lastUpdated);
@@ -110,4 +110,4 @@ export default function SpecSection({ sectionKey, content, lastUpdated, phase })
       )}
     </div>
   );
-}
+});
