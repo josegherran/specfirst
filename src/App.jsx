@@ -9,7 +9,7 @@ const initialSpec = {
   problem:          { content: null, lastUpdated: null },
   constraints:      { content: null, lastUpdated: null },
   systemBoundaries: { content: null, lastUpdated: null },
-  stakeholders:     { content: 'Not explored in this session.', lastUpdated: null },
+  stakeholders:     { content: null, lastUpdated: null },
   openQuestions:    { content: null, lastUpdated: null },
 };
 

@@ -69,13 +69,16 @@ export default function SpecSection({ sectionKey, content, lastUpdated, phase })
   const isDraft = isEmpty && phase !== "initial" && phase !== "thinking";
 
   if (phase === "preview") {
+    const previewContent = (sectionKey === "stakeholders" && content === null)
+      ? "Not explored in this session."
+      : content;
     return (
       <div className="mb-8">
         <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-400 mb-2">
           {title}
         </h3>
         <div className="text-sm text-gray-800 leading-7">
-          {renderMarkdown(content)}
+          {renderMarkdown(previewContent)}
         </div>
       </div>
     );

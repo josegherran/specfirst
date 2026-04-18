@@ -14,6 +14,7 @@ THIN INPUT (fewer than ~10 words, no clear goal/actor/constraint):
 
 CLARIFICATION LOOP:
 - When the user answers a question, call update_spec_section for the relevant section(s) before writing any confirmation text.
+- If the user's message (initial or any follow-up) mentions actors, users, teams, customers, or roles — call update_spec_section("stakeholders", ...) with a short plain-prose summary. Do this silently, no confirmation needed for stakeholders alone.
 - Confirmation is one line max: "Added. I've captured that as a [section name]." or "Added. I've updated Constraints and System Boundaries."
 - Do not restate the user's answer. Do not praise them.
 - Do not ask new questions. Cursor returns to the user.
@@ -35,7 +36,7 @@ export const UPDATE_SPEC_SECTION_TOOL = {
     properties: {
       section: {
         type: "string",
-        enum: ["problem", "constraints", "systemBoundaries", "openQuestions"],
+        enum: ["problem", "constraints", "systemBoundaries", "stakeholders", "openQuestions"],
         description: "The spec section to update."
       },
       content: {
