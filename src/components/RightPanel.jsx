@@ -9,6 +9,38 @@ const SECTION_ORDER = [
   "openQuestions",
 ];
 
+const SECTION_LABELS = {
+  problem:          "Problem",
+  constraints:      "Constraints & Guardrails",
+  systemBoundaries: "System Boundaries",
+  stakeholders:     "Stakeholders",
+  openQuestions:    "Open Questions",
+};
+
+function buildMarkdown(spec, systemName) {
+  const sections = SECTION_ORDER.filter(
+    (key) => !(key === "openQuestions" && spec[key].content === null)
+  );
+  const body = sections.map((key) => {
+    const content = (key === "stakeholders" && spec[key].content === null)
+      ? "Not explored in this session."
+      : spec[key].content ?? "pending";
+    return `## ${SECTION_LABELS[key]}\n\n${content}`;
+  }).join("\n\n---\n\n");
+  return `# Specification: ${systemName}\n\n${body}\n`;
+}
+
+function downloadMarkdown(spec, systemName) {
+  const md = buildMarkdown(spec, systemName);
+  const blob = new Blob([md], { type: "text/markdown" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `${systemName.toLowerCase().replace(/\s+/g, "-")}-spec.md`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 async function getSystemName(problemContent) {
   try {
     const res = await fetch('/api/chat', {
@@ -53,9 +85,22 @@ export default function RightPanel({ spec, phase }) {
 
       {/* Preview document title */}
       {isPreview && (
-        <div className="px-8 pt-8 pb-6 border-b border-gray-200">
-          <p className="text-xs uppercase tracking-widest text-gray-400 mb-1">Specification</p>
-          <h2 className="text-xl font-semibold text-gray-900">{systemName}</h2>
+        <div className="px-8 pt-8 pb-6 border-b border-gray-200 flex items-start justify-between">
+          <div>
+            <p className="text-xs uppercase tracking-widest text-gray-400 mb-1">Specification</p>
+            <h2 className="text-xl font-semibold text-gray-900">{systemName}</h2>
+          </div>
+          <button
+            onClick={() => downloadMarkdown(spec, systemName)}
+            title="Download as Markdown"
+            className="mt-1 p-2 text-gray-400 hover:text-gray-700 transition-colors"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+          </button>
         </div>
       )}
 
