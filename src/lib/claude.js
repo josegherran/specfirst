@@ -1,6 +1,8 @@
 import { SYSTEM_PROMPT, UPDATE_SPEC_SECTION_TOOL } from './prompts.js';
 
-const API_URL = '/anthropic-api/v1/messages';
+const API_URL = import.meta.env.DEV
+  ? '/anthropic-api/v1/messages'
+  : 'https://api.anthropic.com/v1/messages';
 
 async function callStream(messages, onText, onSpecUpdate) {
   const response = await fetch(API_URL, {
@@ -9,6 +11,7 @@ async function callStream(messages, onText, onSpecUpdate) {
       'content-type': 'application/json',
       'x-api-key': import.meta.env.VITE_ANTHROPIC_API_KEY,
       'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true',
     },
     body: JSON.stringify({
       model: 'claude-haiku-4-5-20251001',
